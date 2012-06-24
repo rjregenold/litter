@@ -1,0 +1,7 @@
+<div .hero-unit>
+  <h1>Litter
+  <p>The barely functional Twitter clone.
+  <p>
+    <a .btn .btn-primary .btn-large href=@{AuthR LoginR}>
+      <i .icon-trash .icon-white>
+      \ Get started littering

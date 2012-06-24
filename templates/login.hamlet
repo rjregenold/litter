@@ -1,0 +1,2 @@
+<a href=@{AuthR twitterUrl}>
+  <img src=@{StaticR img_btn_twitter_sign_in_png}>
