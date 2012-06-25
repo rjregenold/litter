@@ -28,7 +28,7 @@
           <div .navbar-inner>
             <div .container>
               <a .brand href=@{HomeR}>Litter
-              <ul .nav>
+              <ul .nav .pull-right>
                 $maybe _ <- maid
                   <li>
                     <a href=@{AuthR LogoutR}>Sign out
