@@ -142,30 +142,44 @@ instance YesodPersist App where
             (connPool master)
 
 instance YesodAuth App where
-    {-type AuthId App = UserId-}
-    type AuthId App = Text
+    type AuthId App = UserId
 
     -- Where to send a user after successful login
     loginDest _ = HomeR
     -- Where to send a user after logout
     logoutDest _ = HomeR
 
-    getAuthId = return . Just . credsIdent
+    getAuthId creds = runDB $ do
+      x <- getBy $ UniqueUser $ credsIdent creds
+      case x of
+        Just (Entity uid _ ) -> do
+          updateCreds uid creds
+          return $ Just uid
+        Nothing -> do
+          fmap Just $ insert $ fromCreds creds
 
-    {-getAuthId creds = runDB $ do-}
-        {-x <- getBy $ UniqueUser $ credsIdent creds-}
-        {-case x of-}
-            {-Just (Entity uid _) -> return $ Just uid-}
-            {-Nothing -> do-}
-                {-fmap Just $ insert $ User (credsIdent creds) Nothing-}
-
-    -- You can add other plugins like BrowserID, email or OAuth here
     authPlugins _ = [authTwitter "SqvkQ9ZhhZ4x9ZEK2MomA" "Yn0kSzzRSv1RLBCTaIsBVNvEirdsAn1xOGrKvwoRzc"]
 
     loginHandler = defaultLayout $ do
       $(widgetFile "login")
 
     authHttpManager = httpManager
+
+updateCreds uid creds = update uid [UserToken =. (credsToken creds), UserSecret =. (credsSecret creds)]
+
+fromCreds :: Creds App -> User
+fromCreds creds = User ident token secret
+  where ident = credsIdent creds
+        token = credsToken creds
+        secret = credsSecret creds
+
+credsToken :: Creds App -> Maybe Text
+credsToken = credsExtraLookup "oauth_token"
+
+credsSecret :: Creds App -> Maybe Text
+credsSecret = credsExtraLookup "oauth_token_secret"
+
+credsExtraLookup k c = lookup k $ credsExtra c
 
 -- This instance is required to use forms. You can modify renderMessage to
 -- achieve customized and internationalized form validation messages.
